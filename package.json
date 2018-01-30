@@ -1,0 +1,28 @@
+{
+  "name": "lunch_picker",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "amazon-cognito-identity-js": "^1.31.0",
+    "aws-sdk": "^2.188.0",
+    "axios": "^0.17.1",
+    "install": "^0.10.4",
+    "npm": "^5.6.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.1.0",
+    "uninstall": "0.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "json-loader": "^0.5.7",
+    "webpack": "^3.10.0"
+  }
+}
