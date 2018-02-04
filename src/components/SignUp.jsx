@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { CognitoUserPool, CognitoUserAttribute, CognitoUser } from 'amazon-cognito-identity-js';
-var { AWSCognito } = require('aws-sdk');
+import { CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import { userPool } from '../utils/cognitoSetup';
 
 class SignUp extends Component {
   state = {
@@ -11,30 +11,21 @@ class SignUp extends Component {
 
   signUp() {
     const { userName, email, password } = this.state;
-
-    const POOL_DATA = {
-      UserPoolId: 'us-east-1_qmn8LpGk9',
-      ClientId: '23m3lvis3ava8geatio6sll85c'
-    };
-
     const user: User = {
       username: userName,
       email: email,
       password: password
     };
-
-    const userPool = new CognitoUserPool(POOL_DATA);
     const attrList: CognitoUserAttribute[] = [];
-
-    const emailAttribute = {
-      Name: 'email',
-      Value: user.email
-    };
-    attrList.push(new CognitoUserAttribute(emailAttribute));
+    const emailAttribute = { Name: 'email', Value: user.email };
     const that = this;
+
+    attrList.push(new CognitoUserAttribute(emailAttribute));
+
     userPool.signUp(user.username, user.password, attrList, null, (err, result) => {
       if (err) {
         console.log(err);
+        this.props.updateUser();
         return;
       }
       console.log(result);

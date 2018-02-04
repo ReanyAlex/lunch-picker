@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import { CognitoUserPool, CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { userPool } from '../utils/cognitoSetup';
+import { AWSURL } from '../utils/cognitoSetup';
+
+import axios from 'axios';
 
 class LogIn extends Component {
   state = {
@@ -11,37 +15,28 @@ class LogIn extends Component {
 
   logIn() {
     const { userName, password } = this.state;
-    const POOL_DATA = {
-      UserPoolId: 'us-east-1_qmn8LpGk9',
-      ClientId: '23m3lvis3ava8geatio6sll85c'
-    };
-
-    const userPool = new CognitoUserPool(POOL_DATA);
 
     const authData = {
       Username: userName,
       Password: password
     };
+
     const authDetails = new AuthenticationDetails(authData);
-    const userData = {
-      Username: userName,
-      Pool: userPool
-    };
+
+    const userData = { Username: userName, Pool: userPool };
+
     const cognitoUser = new CognitoUser(userData);
     const that = this;
     cognitoUser.authenticateUser(authDetails, {
       onSuccess(result) {
         console.log(result);
+
         that.props.history.push('/');
       },
       onFailure(err) {
         console.log(err);
         if (err.message === 'User is not confirmed.') {
-          console.log('1');
-
           that.setState({ needConfirmation: true });
-          //if log need confirmation prompt of code can add an additional input probaly
-          //make cleaner
         }
       }
     });
@@ -50,18 +45,7 @@ class LogIn extends Component {
 
   confirm() {
     const { userName } = this.state;
-
-    const POOL_DATA = {
-      UserPoolId: 'us-east-1_qmn8LpGk9',
-      ClientId: '23m3lvis3ava8geatio6sll85c'
-    };
-
-    const userPool = new CognitoUserPool(POOL_DATA);
-
-    const userData = {
-      Username: userName,
-      Pool: userPool
-    };
+    const userData = { Username: userName, Pool: userPool };
     const cognitoUser = new CognitoUser(userData);
     const that = this;
 
@@ -70,20 +54,31 @@ class LogIn extends Component {
         console.log(err);
         return;
       }
-      console.log(result);
-      that.props.history.push('/');
+
+      const object = { userId: userName, favorite: 'please enter favorite food in profile', going: false };
+
+      axios
+        .post(AWSURL, object, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'allow'
+          }
+        })
+        .then(data => {
+          console.log(data);
+          that.logIn();
+        })
+        .catch(err => console.log(err));
     });
   }
 
   onSubmit(e) {
     e.preventDefault();
-    console.log(this.state.needConfirmation);
     this.state.needConfirmation ? this.confirm() : this.logIn();
   }
 
   renderLoginForm() {
     const { userName, password, confirmationCode } = this.state;
-    console.log(this.state.needConfirmation);
     return this.state.needConfirmation ? (
       <form onSubmit={e => this.onSubmit(e)}>
         <fieldset>
