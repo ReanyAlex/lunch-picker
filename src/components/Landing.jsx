@@ -139,13 +139,15 @@ class Landing extends Component {
   yelpSearch() {
     const APIKEY =
       '-BugizLEvh-iEqv1gPuCHiBboqB7UlXJGvLSNei6pv-bpOPztYnUXbUWRUSH9il14KbZ-4Bot7rdvlyYUKdLS1INKdxygWllOS3aaYeQjoP1_jucyd8PSXWA23d2WnYx';
-    const YELPURL = 'https://api.yelp.com/v3/businesses/search?term=pizza&location=atlanta';
+    const YELPURL = 'https://api.yelp.com/v3/businesses/search/?location=30345';
 
     axios
       .get(YELPURL, {
         headers: {
+          // 'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
-          Authorization: `Bearer ${APIKEY}`
+          Authorization: `Bearer ${APIKEY}`,
+          'Access-Control-Allow-Headers': 'X-Custom-Header, Access-Control-Allow-Origin'
         }
       })
       .then(data => console.log(data))
