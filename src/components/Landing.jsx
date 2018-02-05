@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import styled from 'styled-components';
 
 import Restaurant from './Restaurant';
+import { yelp } from '../yelp';
 
 const MainWrapper = styled.div`
   margin: 0 auto;
@@ -54,7 +55,8 @@ class Landing extends Component {
   state = {
     favorite: '',
     going: null,
-    whosGoing: []
+    whosGoing: [],
+    generateLunch: false
   };
 
   componentDidMount() {
@@ -142,12 +144,12 @@ class Landing extends Component {
     const YELPURL = 'https://api.yelp.com/v3/businesses/search/?location=30345';
 
     axios
-      .get(YELPURL, {
+      .get('https://api.yelp.com/v3/transactions/delivery/search?latitude=37.786882&longitude=-122.399972', {
         headers: {
           // 'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
-          Authorization: `Bearer ${APIKEY}`,
-          'Access-Control-Allow-Headers': 'X-Custom-Header, Access-Control-Allow-Origin'
+          Authorization:
+            'Bearer -BugizLEvh-iEqv1gPuCHiBboqB7UlXJGvLSNei6pv-bpOPztYnUXbUWRUSH9il14KbZ-4Bot7rdvlyYUKdLS1INKdxygWllOS3aaYeQjoP1_jucyd8PSXWA23d2WnYx'
         }
       })
       .then(data => console.log(data))
@@ -158,8 +160,9 @@ class Landing extends Component {
     return <PeopleGoing key={user}>{user}</PeopleGoing>;
   }
 
-  render() {
+  renderForm() {
     const { favorite, going, whosGoing } = this.state;
+
     return (
       <MainWrapper className="Landing">
         <h2>{`Welcome ${this.props.userId} `}</h2>
@@ -185,11 +188,49 @@ class Landing extends Component {
           <PeopleGoingList>{whosGoing.map(user => this.renderWhoIsGoing(user))}</PeopleGoingList>
         </div>
         <div>
+          {/* <Button onClick={() => this.setState({ generateLunch: !this.state.generateLunch })}>
+            Press When Ready For Lunch
+          </Button> */}
           <Button onClick={() => this.restaurantPick()}>Press When Ready For Lunch</Button>
         </div>
-        <Restaurant />
       </MainWrapper>
     );
+  }
+
+  render() {
+    // console.log(yelp);
+    // const { favorite, going, whosGoing } = this.state;
+    return this.state.generateLunch ? <Restaurant /> : this.renderForm();
+
+    // <MainWrapper className="Landing">
+    //   <h2>{`Welcome ${this.props.userId} `}</h2>
+    //   <div>
+    //     <h3>Are you going to lunch today?</h3>
+    //     <form onSubmit={e => this.onSubmit(e)}>
+    //       <fieldset>
+    //         <br />
+    //         <label htmlFor="favorite">What is you Lunch Selection For Today:</label>
+    //         <FoodInput
+    //           id="favorite"
+    //           type="text"
+    //           name="favorite"
+    //           value={favorite}
+    //           onChange={e => this.setState({ favorite: e.target.value })}
+    //         />
+    //       </fieldset>
+    //       <GoingButton type="submit" value={going ? 'Exit the Train' : 'Board the Lunch Train'} />
+    //     </form>
+    //   </div>
+    //   <div>
+    //     <h3>Who is already Going:</h3>
+    //     <PeopleGoingList>{whosGoing.map(user => this.renderWhoIsGoing(user))}</PeopleGoingList>
+    //   </div>
+    //   <div>
+    //     <Button onClick={() => this.restaurantPick()}>Press When Ready For Lunch</Button>
+    //   </div>
+    //   {this.renderForm()}
+    //   <Restaurant />
+    // </MainWrapper>
   }
 }
 
