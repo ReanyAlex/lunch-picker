@@ -13,11 +13,23 @@ import Profile from './components/Profile';
 
 class App extends Component {
   state = {
-    userId: null
+    userId: null,
+    currentLocation: {}
   };
 
   componentDidMount() {
     this.findUser();
+    this.currentLocation();
+  }
+
+  currentLocation() {
+    navigator.geolocation.getCurrentPosition(location => {
+      const currentLocation = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      };
+      this.setState({ currentLocation });
+    });
   }
 
   findUser() {
@@ -46,7 +58,11 @@ class App extends Component {
   }
 
   render() {
-    const userProps = { userId: this.state.userId, updateUser: this.updateUser.bind(this) };
+    const userProps = {
+      userId: this.state.userId,
+      updateUser: this.updateUser.bind(this),
+      currentLocation: this.state.currentLocation
+    };
 
     return (
       <BrowserRouter>

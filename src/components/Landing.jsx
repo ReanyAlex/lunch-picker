@@ -56,23 +56,14 @@ class Landing extends Component {
     favorite: '',
     going: null,
     whosGoing: [],
-    generateLunch: false
+    generateLunch: false,
+    restaurantInfo: {}
   };
 
   componentDidMount() {
-    console.log('did mount');
+    console.log('mount');
     this.getAWSUsers();
     this.props.updateUser();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    // if (prevState.going === Boolean) {
-    //   return;
-    // }
-    console.log('did update');
-    if (prevState.going !== this.state.going && this.state.going !== null) {
-      // this.getAWSUsers();
-    }
   }
 
   getAWSUsers(nextStateGoing) {
@@ -80,7 +71,6 @@ class Landing extends Component {
     axios
       .get(AWSURL)
       .then(data => {
-        console.log('incoming data', data);
         let favorite = '';
         const whosGoing = [];
         let going;
@@ -98,7 +88,7 @@ class Landing extends Component {
 
         this.setState({ favorite, whosGoing, going });
       })
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
   }
 
   onSubmit(e) {
@@ -117,7 +107,7 @@ class Landing extends Component {
 
     this.setState({ going, whosGoing });
     const object = { userId, favorite, going };
-    axios.post(AWSURL, object).catch(err => console.log(err));
+    axios.post(AWSURL, object).catch(err => console.error(err));
   }
 
   restaurantPick() {
@@ -126,34 +116,38 @@ class Landing extends Component {
       .get(AWSURL)
       .then(data => {
         data.data.forEach(user => {
-          choices.push(user.favorite);
+          if (user.going) {
+            choices.push(user.favorite);
+          }
         });
         console.log(choices);
         const length = choices.length;
         const selectorIndex = Math.floor(Math.random() * length);
+        console.log(selectorIndex);
         const searchItem = choices[selectorIndex];
         console.log(searchItem);
         this.yelpSearch(searchItem);
       })
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
   }
 
-  yelpSearch() {
-    const APIKEY =
-      '-BugizLEvh-iEqv1gPuCHiBboqB7UlXJGvLSNei6pv-bpOPztYnUXbUWRUSH9il14KbZ-4Bot7rdvlyYUKdLS1INKdxygWllOS3aaYeQjoP1_jucyd8PSXWA23d2WnYx';
-    const YELPURL = 'https://api.yelp.com/v3/businesses/search/?location=30345';
+  yelpSearch(searchItem) {
+    const AWSRESTAURANTURL = 'https://wlhi41bngi.execute-api.us-east-1.amazonaws.com/dev/lunch-picker/restaurant';
+    const body = {};
+
+    body.term = searchItem;
+    body.latitude = this.props.currentLocation.latitude;
+    body.longitude = this.props.currentLocation.longitude;
+    body.radius = 8050;
+    body.sort_by = 'rating';
 
     axios
-      .get('https://api.yelp.com/v3/transactions/delivery/search?latitude=37.786882&longitude=-122.399972', {
-        headers: {
-          // 'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          Authorization:
-            'Bearer -BugizLEvh-iEqv1gPuCHiBboqB7UlXJGvLSNei6pv-bpOPztYnUXbUWRUSH9il14KbZ-4Bot7rdvlyYUKdLS1INKdxygWllOS3aaYeQjoP1_jucyd8PSXWA23d2WnYx'
-        }
+      .post(AWSRESTAURANTURL, body)
+      .then(data => {
+        console.log(data.data);
+        this.setState({ generateLunch: true, restaurantInfo: data.data });
       })
-      .then(data => console.log(data))
-      .catch(err => console.log(err));
+      .catch(err => console.error(err.message));
   }
 
   renderWhoIsGoing(user) {
@@ -162,23 +156,28 @@ class Landing extends Component {
 
   renderForm() {
     const { favorite, going, whosGoing } = this.state;
-
     return (
       <MainWrapper className="Landing">
         <h2>{`Welcome ${this.props.userId} `}</h2>
         <div>
-          <h3>Are you going to lunch today?</h3>
+          {!this.state.going ? <h3>Are you going to lunch today?</h3> : <h3>Hope you enjoy lunch!</h3>}
           <form onSubmit={e => this.onSubmit(e)}>
             <fieldset>
               <br />
-              <label htmlFor="favorite">What is you Lunch Selection For Today:</label>
-              <FoodInput
-                id="favorite"
-                type="text"
-                name="favorite"
-                value={favorite}
-                onChange={e => this.setState({ favorite: e.target.value })}
-              />
+              {!this.state.going ? (
+                <span>
+                  <label htmlFor="favorite">What is you Lunch Selection For Today:</label>
+                  <FoodInput
+                    id="favorite"
+                    type="text"
+                    name="favorite"
+                    value={favorite}
+                    onChange={e => this.setState({ favorite: e.target.value })}
+                  />
+                </span>
+              ) : (
+                <span>You Chose {this.state.favorite} for lunch</span>
+              )}
             </fieldset>
             <GoingButton type="submit" value={going ? 'Exit the Train' : 'Board the Lunch Train'} />
           </form>
@@ -188,49 +187,23 @@ class Landing extends Component {
           <PeopleGoingList>{whosGoing.map(user => this.renderWhoIsGoing(user))}</PeopleGoingList>
         </div>
         <div>
-          {/* <Button onClick={() => this.setState({ generateLunch: !this.state.generateLunch })}>
-            Press When Ready For Lunch
-          </Button> */}
           <Button onClick={() => this.restaurantPick()}>Press When Ready For Lunch</Button>
         </div>
       </MainWrapper>
     );
   }
 
-  render() {
-    // console.log(yelp);
-    // const { favorite, going, whosGoing } = this.state;
-    return this.state.generateLunch ? <Restaurant /> : this.renderForm();
+  renderRestautant() {
+    return (
+      <div>
+        <button onClick={() => this.setState({ generateLunch: false })}>Undo Restaurant Selection</button>
+        <Restaurant restaurantInfo={this.state.restaurantInfo} />
+      </div>
+    );
+  }
 
-    // <MainWrapper className="Landing">
-    //   <h2>{`Welcome ${this.props.userId} `}</h2>
-    //   <div>
-    //     <h3>Are you going to lunch today?</h3>
-    //     <form onSubmit={e => this.onSubmit(e)}>
-    //       <fieldset>
-    //         <br />
-    //         <label htmlFor="favorite">What is you Lunch Selection For Today:</label>
-    //         <FoodInput
-    //           id="favorite"
-    //           type="text"
-    //           name="favorite"
-    //           value={favorite}
-    //           onChange={e => this.setState({ favorite: e.target.value })}
-    //         />
-    //       </fieldset>
-    //       <GoingButton type="submit" value={going ? 'Exit the Train' : 'Board the Lunch Train'} />
-    //     </form>
-    //   </div>
-    //   <div>
-    //     <h3>Who is already Going:</h3>
-    //     <PeopleGoingList>{whosGoing.map(user => this.renderWhoIsGoing(user))}</PeopleGoingList>
-    //   </div>
-    //   <div>
-    //     <Button onClick={() => this.restaurantPick()}>Press When Ready For Lunch</Button>
-    //   </div>
-    //   {this.renderForm()}
-    //   <Restaurant />
-    // </MainWrapper>
+  render() {
+    return this.state.generateLunch ? this.renderRestautant() : this.renderForm();
   }
 }
 

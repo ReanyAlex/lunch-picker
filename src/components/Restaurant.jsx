@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { yelp } from '../yelp';
+// import { yelp } from '../yelp';
 
 import styled from 'styled-components';
 
@@ -28,7 +28,7 @@ const Image = styled.img`
 
 class Restaurant extends Component {
   render() {
-    const { name, location, categories, url, rating, price, image_url } = yelp.businesses[0];
+    const { name, location, categories, url, rating, price, image_url } = this.props.restaurantInfo[0];
 
     return (
       <MainWrapper>

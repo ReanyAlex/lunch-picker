@@ -5,6 +5,8 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^1.31.0",
     "axios": "^0.17.1",
+    "jquery": "^3.3.1",
+    "jsdom": "^11.6.2",
     "npm": "^5.6.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
