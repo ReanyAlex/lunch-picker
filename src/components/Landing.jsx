@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { AWSURL } from '../utils/cognitoSetup';
 import axios from 'axios';
-import fetch from 'node-fetch';
 
 import styled from 'styled-components';
 
 import Restaurant from './Restaurant';
-import { yelp } from '../yelp';
 
 const MainWrapper = styled.div`
   margin: 0 auto;
@@ -25,6 +23,18 @@ const GoingButton = styled.input`
 `;
 
 const Button = styled.button`
+  height: 75px;
+  width: 300px;
+  border-radius: 100px;
+  background: #e20100;
+  color: white;
+  &:hover {
+    color: #ffcb16;
+  }
+`;
+
+const GoBackButton = styled.button`
+  margin-left: 40%;
   height: 75px;
   width: 300px;
   border-radius: 100px;
@@ -57,7 +67,8 @@ class Landing extends Component {
     going: null,
     whosGoing: [],
     generateLunch: false,
-    restaurantInfo: {}
+    restaurantInfo: {},
+    zipCode: ''
   };
 
   componentDidMount() {
@@ -110,34 +121,14 @@ class Landing extends Component {
     axios.post(AWSURL, object).catch(err => console.error(err));
   }
 
-  restaurantPick() {
-    const choices = [];
-    axios
-      .get(AWSURL)
-      .then(data => {
-        data.data.forEach(user => {
-          if (user.going) {
-            choices.push(user.favorite);
-          }
-        });
-        console.log(choices);
-        const length = choices.length;
-        const selectorIndex = Math.floor(Math.random() * length);
-        console.log(selectorIndex);
-        const searchItem = choices[selectorIndex];
-        console.log(searchItem);
-        this.yelpSearch(searchItem);
-      })
-      .catch(err => console.error(err));
-  }
-
   yelpSearch(searchItem) {
+    if (!this.state.zipCode) {
+      console.log('need location');
+      return;
+    }
     const AWSRESTAURANTURL = 'https://wlhi41bngi.execute-api.us-east-1.amazonaws.com/dev/lunch-picker/restaurant';
     const body = {};
-
-    body.term = searchItem;
-    body.latitude = this.props.currentLocation.latitude;
-    body.longitude = this.props.currentLocation.longitude;
+    body.location = this.state.zipCode;
     body.radius = 8050;
     body.sort_by = 'rating';
 
@@ -155,7 +146,7 @@ class Landing extends Component {
   }
 
   renderForm() {
-    const { favorite, going, whosGoing } = this.state;
+    const { favorite, going, whosGoing, zipCode } = this.state;
     return (
       <MainWrapper className="Landing">
         <h2>{`Welcome ${this.props.userId} `}</h2>
@@ -163,10 +154,20 @@ class Landing extends Component {
           {!this.state.going ? <h3>Are you going to lunch today?</h3> : <h3>Hope you enjoy lunch!</h3>}
           <form onSubmit={e => this.onSubmit(e)}>
             <fieldset>
+              <label htmlFor="zipcode">What is your ZipCode </label>
+              <input
+                id="zipcode"
+                type="text"
+                name="zipcode"
+                vaule={zipCode}
+                required
+                placeholder="required"
+                onChange={e => this.setState({ zipCode: e.target.value })}
+              />
               <br />
               {!this.state.going ? (
                 <span>
-                  <label htmlFor="favorite">What is you Lunch Selection For Today:</label>
+                  <label htmlFor="favorite">What is your Lunch Selection For Today:</label>
                   <FoodInput
                     id="favorite"
                     type="text"
@@ -187,7 +188,7 @@ class Landing extends Component {
           <PeopleGoingList>{whosGoing.map(user => this.renderWhoIsGoing(user))}</PeopleGoingList>
         </div>
         <div>
-          <Button onClick={() => this.restaurantPick()}>Press When Ready For Lunch</Button>
+          <Button onClick={() => this.yelpSearch()}>Press When Ready For Lunch</Button>
         </div>
       </MainWrapper>
     );
@@ -196,8 +197,8 @@ class Landing extends Component {
   renderRestautant() {
     return (
       <div>
-        <button onClick={() => this.setState({ generateLunch: false })}>Undo Restaurant Selection</button>
         <Restaurant restaurantInfo={this.state.restaurantInfo} />
+        <GoBackButton onClick={() => this.setState({ generateLunch: false })}>Go Back To Generator</GoBackButton>
       </div>
     );
   }

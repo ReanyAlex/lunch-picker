@@ -4,13 +4,16 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 
 const MainWrapper = styled.div`
-  width: 350px;
+  padding-left: 10%;
+  padding-bottom: 30px;
   margin: 0 auto;
 `;
 
 const HeaderWrapper = styled.div`
-  padding-bottom: 20px;
-  text-align: center;
+  padding-left: 5%;
+  display: inline-block;
+  width: 40%
+  vertical-align:top;
 `;
 
 const MainHeader = styled.h2`
@@ -23,7 +26,10 @@ const YelpDisclamer = styled.span`
 `;
 
 const Image = styled.img`
+  width: 40%;
+  display: inline-block;
   border: 1px solid black;
+  vertical-align: top;
 `;
 
 class Restaurant extends Component {
@@ -32,23 +38,23 @@ class Restaurant extends Component {
 
     return (
       <MainWrapper>
+        <Image src={image_url} alt=" restaurant image" />
         <HeaderWrapper>
           <MainHeader>Restaurant Information</MainHeader>
           <YelpDisclamer>Generated from Yelp</YelpDisclamer>
+          <div>
+            <p>Restaurant Name: {name}</p>
+            <p>Category: {categories[0].title}</p>
+            <p>Rating: {rating}</p>
+            <p>Cost: {price}</p>
+            <p>
+              Restaurant Address: {location.address1}. {location.city},{location.state} {location.zip_code}
+            </p>
+            <a href={url} target="_blank">
+              Link to Yelp
+            </a>
+          </div>
         </HeaderWrapper>
-        <div>
-          <p>Restaurant Name: {name}</p>
-          <p>Category: {categories[0].title}</p>
-          <p>Rating: {rating}</p>
-          <p>Cost: {price}</p>
-          <Image src={image_url} alt=" restaurant image" />
-          <p>
-            Restaurant Address: {location.address1}. {location.city},{location.state} {location.zip_code}
-          </p>
-          <a href={url} target="_blank">
-            Link to Yelp
-          </a>
-        </div>
       </MainWrapper>
     );
   }

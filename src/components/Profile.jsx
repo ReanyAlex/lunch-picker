@@ -51,7 +51,7 @@ class Landing extends Component {
             <legend>Information:</legend>
             <span>User: {this.props.userId}</span>
             <br />
-            <label htmlFor="favorite">Favorite Food:</label>
+            <label htmlFor="favorite">Lunch Selection:</label>
             <input
               id="favorite"
               type="text"
